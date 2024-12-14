@@ -55,7 +55,7 @@ schm <- SCTransform(tnk, vars.to.regress = vars2regress) %>%
     basic_clustering(
         resolution = resolutions,
         reduction = "harmony",
-        pcs = .@misc$harmony.pcs
+        dims = .@misc$harmony.pcs
     )
 ggsave("elbow_harmony.png", width = 9, height = 6, plot = schm@misc$harmony.elbow)
 saveRDS(schm, file = "TNK_harmony.rds")
@@ -73,9 +73,9 @@ sccc <- IntegrateData(sccc_anchor, normalization.method = "SCT") %>%
     basic_clustering(
         resolution = resolutions,
         reduction = "pca",
-        pcs = .@misc$pca.pcs
+        dims = .@misc$pca.pcs
     )
-ggsave("elbow_SeuratCCA.png", width = 9, height = 6, plot = sccc@misc$harmony.elbow)
+ggsave("elbow_SeuratCCA.png", width = 9, height = 6, plot = sccc@misc$pca.elbow)
 saveRDS(sccc, file = "TNK_SeuratCCA.rds")
 
 

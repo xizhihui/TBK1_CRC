@@ -35,10 +35,10 @@ basic_flow <- function(obj) {
     RunUMAP(dims = 1:30)
 }
 
-save_matrix <- function(sceobj, outpath) {
+save_matrix <- function(sces, outpath) {
     dir.create(outpath, recursive = TRUE, showWarnings = FALSE)
     fpaths <- file.path(outpath, c("matrix.mtx", "barcodes.tsv", "features.tsv"))
-    Matrix::writeMM(sces@assay$RNA@counts, file = fpaths[1])
+    Matrix::writeMM(sces@assays$RNA@count, file = fpaths[1])
     writeLines(colnames(sces), con = fpaths[2])
     data.frame(
         gene = rownames(sces),
@@ -109,7 +109,7 @@ schm <- SCTransform(sces, vars.to.regress = vars2regress) %>%
     basic_clustering(
         resolution = resolutions,
         reduction = "harmony",
-        pcs = .@misc$harmony.pcs
+        dims = .@misc$harmony.pcs
     )
 ggsave("elbow_harmony.png", width = 9, height = 6, plot = schm@misc$harmony.elbow)
 saveRDS(schm, file = "main_harmony.rds")
@@ -127,9 +127,9 @@ sccc <- IntegrateData(sccc_anchor, normalization.method = "SCT") %>%
     basic_clustering(
         resolution = resolutions,
         reduction = "pca",
-        pcs = .@misc$pca.pcs
+        dims = .@misc$pca.pcs
     )
-ggsave("elbow_SeuratCCA.png", width = 9, height = 6, plot = sccc@misc$harmony.elbow)
+ggsave("elbow_SeuratCCA.png", width = 9, height = 6, plot = sccc@misc$pca.elbow)
 saveRDS(sccc, file = "main_SeuratCCA.rds")
 
 

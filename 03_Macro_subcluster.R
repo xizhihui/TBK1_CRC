@@ -52,7 +52,7 @@ schm <- SCTransform(macro, vars.to.regress = vars2regress) %>%
     basic_clustering(
         resolution = resolutions,
         reduction = "harmony",
-        pcs = .@misc$harmony.pcs
+        dims = .@misc$harmony.pcs
     )
 ggsave("elbow_harmony.png", width = 9, height = 6, plot = schm@misc$harmony.elbow)
 saveRDS(schm, file = "macro_harmony.rds")
@@ -70,9 +70,9 @@ sccc <- IntegrateData(sccc_anchor, normalization.method = "SCT") %>%
     basic_clustering(
         resolution = resolutions,
         reduction = "pca",
-        pcs = .@misc$pca.pcs
+        dims = .@misc$pca.pcs
     )
-ggsave("elbow_SeuratCCA.png", width = 9, height = 6, plot = sccc@misc$harmony.elbow)
+ggsave("elbow_SeuratCCA.png", width = 9, height = 6, plot = sccc@misc$pca.elbow)
 saveRDS(sccc, file = "macro_SeuratCCA.rds")
 
 
@@ -153,8 +153,8 @@ subtypes["2"] <- "Macro_C6_Malat1"
 subtypes["3"] <- "Macro_C6_Malat1"
 subtypes["7"] <- "doublets"
 
-scmg$subtypes <- subtypes[as.character(scmg$finalcluster)]
-scmg$subtypes <- factor(scmg$subtypes, sort(unique(subtypes)))
+schm$subtypes <- subtypes[as.character(schm$finalcluster)]
+schm$subtypes <- factor(schm$subtypes, sort(unique(subtypes)))
 subtypes_cols <- setNames(
     c("lightgray", as.character(BuenColors::jdb_palette("corona", 6))), 
     sort(unique(subtypes))
@@ -192,25 +192,25 @@ aimgenes <- c(
   "Malat1", "Neat1", "mt-Co1", "mt-Co3"
 )
 VlnPlot(
-    scmg2, aimgenes, stack = T, flip = T, 
+    schm2, aimgenes, stack = T, flip = T, 
     group.by = "subtypes", cols = subtypes_cols, fill.by = "ident"
 ) + NoLegend()
 ggsave("final_violin_features.pdf", width = 5, height = 10)
 
-DotPlot(scmg2, features = aimgenes, group.by = "subtypes") + 
+DotPlot(schm2, features = aimgenes, group.by = "subtypes") + 
   labs(x = NULL, y = NULL) + RotatedAxis() +
   scale_color_gradient2(low = "steelblue", high = "red")
 ggsave("final_dotplot_markers.pdf", width = 10, height = 3.5)
 
 ## cell proportion or preference ----
-cc <- rubasic::count_ratio2(scmg2@meta.data, "sample2", "subtypes") %>%
+cc <- rubasic::count_ratio2(schm2@meta.data, "sample2", "subtypes") %>%
   dplyr::rename(sample = sample2) %>%
-  dplyr::mutate(group = factor(gsub("_[12]$", "", sample), levels(scmg$group)))
+  dplyr::mutate(group = factor(gsub("_[12]$", "", sample), levels(schm$group)))
 ccplt <- rusinglecell::plot_cellcount(cc, "subtypes", cols = subtypes_cols, combine = FALSE, addlabel = T)
 ccplt$ratio + theme_bw() + labs(y = "Cell proportion in total macrophages")
 ggsave("final_cell_proportion_in_sample.pdf", width = 8, height = 4)
 
-roe <- rusinglecell::odds_ratio(droplevels(scmg2$subtypes), scmg2$group)
+roe <- rusinglecell::odds_ratio(droplevels(schm2$subtypes), schm2$group)
 rusinglecell::plot_roe(roe, "group") +
   theme(
     axis.title.y = element_text(family = "Arial", size = 14, face = "bold"),
